@@ -36,17 +36,28 @@ canvas.addEventListener('click', function(event) {
 		cellY: event.offsetY / blockSize >> 0
 	}
 
-	if (gameFinished != true) {
 
-		if ((matrix[obj.cellY][obj.cellX] === 0) ()) {
+	if (!gameFinished) {
+		if ((matrix[obj.cellY][obj.cellX] === 0)) {
+			// This part is my turn
 			drawElement(whichTurn, obj.cellX, obj.cellY);
 			if (check()) {
 				console.log('Game finished!');
 				gameFinished = true;
+				return ;
 			}
-			whichTurn = (whichTurn === 'X') ? 'O' : 'X';
+			whichTurn = 'O';	
+			// This part is "AI" turn	
+			let mm_matrix = [...matrix];
+			let pos = getBestMove(mm_matrix);
+			drawElement(whichTurn, pos.j, pos.i);
+			if (check()) {
+				console.log('Game finished!');
+				gameFinished = true;
+				// resetGame();
+			}			
+			whichTurn = 'X';
 		}
-
 	} else {
 		resetGame();
 	}
@@ -135,7 +146,6 @@ function	checkDiag() {
 
 
 function	checkDraw() {
-	console.log('checkDraw');
 	for (let i = 0; i < 3; i++) {
 		for (let j = 0; j < 3; j++) {
 			if (matrix[i][j] === 0) {
@@ -190,4 +200,117 @@ function	drawBoard() {
 	ctx.moveTo(0, blockSize * 2);
 	ctx.lineTo(blockSize * 3, blockSize * 2);
 	ctx.stroke();	
+}
+
+
+// I know, I know ... fuck off
+function	mm_checkWinner(mm_matrix) {
+	// Check line
+	for (let i = 0; i < 3; i++) {
+		if (mm_matrix[i][0] === mm_matrix[i][1] && mm_matrix[i][1] === mm_matrix[i][2] && mm_matrix[i][0] != 0) {
+			if (mm_matrix[i][0] === 'X') {
+				return -1;
+			} else if (mm_matrix[i][0] === 'O') {
+				return 1;
+			}
+		}
+	}
+
+	// Check column
+	for (let i = 0; i < 3; i++) {
+		if (mm_matrix[0][i] === mm_matrix[1][i] &&  mm_matrix[1][i] ===  mm_matrix[2][i] && mm_matrix[0][i] != 0) {
+			if (mm_matrix[0][i] === 'X') {
+				return -1;
+			} else if (mm_matrix[0][i] === 'O') {
+				return 1;
+			}
+		}
+	}
+
+	// Check diagonal
+	if (mm_matrix[1][1] != 0 && ((mm_matrix[0][0] === mm_matrix[1][1] && mm_matrix[1][1] === mm_matrix[2][2]) || (mm_matrix[0][2] === mm_matrix[1][1] && mm_matrix[1][1] === mm_matrix[2][0]))) {
+		if (mm_matrix[1][1] === 'X') {
+			return -1;
+		} else if (mm_matrix[1][1] === 'O') {
+			return 1;
+		}
+	}
+
+	// Check tie
+	let tie = true;
+	for (let i = 0; i < 3; i++) {
+		for (let j = 0; j < 3; j++) {
+			if (mm_matrix[i][j] === 0) {
+				tie = false;
+			}
+		}
+	}
+	if (tie) {
+		return 0;
+	}
+
+	// If nothing, keep working mothefucker
+	return null;
+}
+
+function 	minimax(mm_matrix, depth, maximazingPlayer) {
+	let 	result = mm_checkWinner(mm_matrix);
+
+	if (result !== null) {
+		return result;
+	}
+
+	// Max
+	if (maximazingPlayer) {
+		let bestScore = -Infinity;
+		for (let i = 0; i < 3; i++) {
+			for (let j = 0; j < 3; j++) {
+				if (mm_matrix[i][j] === 0) {
+					mm_matrix[i][j] = 'O';
+					let score = minimax(mm_matrix, depth + 1, false);
+					mm_matrix[i][j] = 0; // Make it empty
+					bestScore = Math.max(score, bestScore);
+				}
+			}
+		}
+		return bestScore;
+	// Min
+	} else {
+		let bestScore = Infinity;
+		for (let i = 0; i < 3; i++) {
+			for (let j = 0; j < 3; j++) {
+				if (mm_matrix[i][j] === 0) {
+					mm_matrix[i][j] = 'X';
+					let score = minimax(mm_matrix, depth + 1, true);
+					mm_matrix[i][j] = 0; // Make it empty
+					bestScore = Math.min(score, bestScore);
+				}
+			}
+		}
+		return bestScore;
+	}
+}
+
+function 	getBestMove(mm_matrix) {
+	let 	bestScore = -Infinity;
+	let 	pos;
+
+	console.log('[start] getBestMove');
+	for (let i = 0; i < 3; i++) {
+		for (let j = 0; j < 3; j++) {
+			if (mm_matrix[i][j] === 0) {
+				mm_matrix[i][j] = 'O';
+				let score = minimax(mm_matrix, 0, false);
+				mm_matrix[i][j] = 0;
+				if (score > bestScore) {
+					bestScore = score;
+					pos = {i, j};
+					console.log(bestScore);
+					console.log(pos);
+				}
+			}
+		}
+	}
+	console.log('[end] getBestMove');
+	return pos;
 }
