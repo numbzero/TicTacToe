@@ -48,7 +48,7 @@ canvas.addEventListener('click', function(event) {
                 return;
             }
             whichTurn = 'O';
-            // This part is "AI" turn	
+            // This part is "AI" turn   
             let mm_matrix = [...matrix];
             let pos = getBestMove(mm_matrix);
             drawElement(whichTurn, pos.j, pos.i);
@@ -103,8 +103,8 @@ function check() {
     } else if (checkDiag()) {
         showEndGame(whichTurn + ' wins!');
         return true;
-    } else if (checkDraw()) {
-        showEndGame('Draw!');
+    } else if (checkTie()) {
+        showEndGame('Tie!');
         return true;
     }
     return false;
@@ -143,7 +143,7 @@ function checkDiag() {
 }
 
 
-function checkDraw() {
+function checkTie() {
     for (let i = 0; i < 3; i++) {
         for (let j = 0; j < 3; j++) {
             if (matrix[i][j] === 0) {
@@ -156,11 +156,11 @@ function checkDraw() {
 
 
 function showEndGame(message) {
-    // ctx.fillStyle 	= `rgb(0, 0, 0)`;
+    // ctx.fillStyle    = `rgb(0, 0, 0)`;
     // ctx.fillRect(0, 0, canvas.width /* width */, canvas.height /* height */);
     // ctx.strokeStyle = `rgb(255, 0, 0)`;
     ctx.lineWidth = 10;
-    // ctx.strokeRect(0, 0, canvas.width /* width */, canvas.height /* height */);	
+    // ctx.strokeRect(0, 0, canvas.width /* width */, canvas.height /* height */);  
 
     /* Draw text */
     ctx.fillStyle = `rgb(0, 255, 0)`;
